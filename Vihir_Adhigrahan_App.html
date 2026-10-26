@@ -3913,8 +3913,10 @@ ${sigThree(d, 22)}`];
       ${lvl === "village" ? `<label class="fld wide"><span>वाड्या / तांडे / वस्त्या (एका ओळीत एक)</span><textarea id="mWadis" rows="4">${h((n.wadis || []).join("\n"))}</textarea></label>` : ""}
       ${keys.length || lvl === "village" ? '<p><button id="mSave" class="primary">माहिती जतन करा</button></p>' : ""}
       ${childLvl ? `<hr><h4>एकदम अनेक ${LEVEL_NAME[childLvl]} जोडा</h4>
-        <p class="muted">एका ओळीत एक नाव. आधी असलेली नावे पुन्हा जोडली जाणार नाहीत.${childLvl === "gp" ? " प्रत्येक ग्रामपंचायतीसाठी त्याच नावाचे गाव आपोआप तयार होईल." : ""}</p>
-        <textarea id="mBulk" rows="5" placeholder="${childLvl === "village" ? "उदा.\nनिधोना\nवाघ्रुळ" : ""}"></textarea>
+        <p class="muted">${childLvl === "gp"
+          ? "वेबसाईट / Excel मधून यादी कॉपी करून येथे पेस्ट करा. एका ओळीत: <b>गाव</b> (ग्रामपंचायत व गाव एकच नाव) किंवा <b>ग्रामपंचायत, गाव</b> (गट ग्रामपंचायत). शेवटी लोकसंख्या असल्यास ती सन 2011 लोकसंख्या म्हणून घेतली जाते. अ.क्र. व शीर्षक ओळ आपोआप वगळली जाते."
+          : "एका ओळीत एक नाव (शेवटी लोकसंख्या असल्यास चालेल). आधी असलेली नावे पुन्हा जोडली जाणार नाहीत."}</p>
+        <textarea id="mBulk" rows="6" placeholder="${childLvl === "gp" ? "उदा.\nदेवगाव\nकाजळा, कस्तुरवाडी\n1\tकेळिगव्हाण\t1450" : childLvl === "village" ? "उदा.\nनिधोना\nवाघ्रुळ" : ""}"></textarea>
         <p><button id="mBulkAdd">जोडा</button> <span class="muted">सध्या ${n.children.length} ${LEVEL_NAME[childLvl]}</span></p>` : ""}`;
     keys.forEach((k) => { const el = $("#m_" + k); if (el) el.value = (n.info || {})[k] || ""; });
 
@@ -3940,17 +3942,46 @@ ${sigThree(d, 22)}`];
       save(); mCascade.set(path.slice(0, -1)); renderMaster(); toast("हटवले");
     });
     on("mBulkAdd", () => {
-      const names = $("#mBulk").value.split("\n").map((s) => s.trim()).filter(Boolean);
-      let added = 0;
-      for (const name of names) {
-        if (n.children.some((c) => c.name === name)) continue;
-        const c = node(name, childLvl === "village" ? { wadis: [] } : null);
-        if (childLvl === "gp") c.children.push(node(name, { wadis: [] }));
-        n.children.push(c); added++;
+      const rows = parseBulk($("#mBulk").value);
+      let added = 0, villages = 0;
+      for (const r of rows) {
+        let c = n.children.find((x) => x.name === r.name);
+        if (!c) {
+          c = node(r.name, childLvl === "village" ? { wadis: [] } : null);
+          n.children.push(c); added++;
+        }
+        if (childLvl === "village" && r.pop) c.info = Object.assign(c.info || {}, { pop_2011: c.info && c.info.pop_2011 || r.pop });
+        if (childLvl !== "gp") continue;
+        // ग्रामपंचायत → its village (same name when only one name is given)
+        const vname = r.village || r.name;
+        let v = c.children.find((x) => x.name === vname);
+        if (!v) { v = node(vname, { wadis: [] }); c.children.push(v); villages++; }
+        if (r.pop && !(v.info && v.info.pop_2011)) v.info = Object.assign(v.info || {}, { pop_2011: r.pop });
       }
       save(); mCascade.set(path); renderMaster();
-      toast(`${added} नवीन ${LEVEL_NAME[childLvl]} जोडले`);
+      toast(`${added} नवीन ${LEVEL_NAME[childLvl]}` + (childLvl === "gp" ? `, ${villages} गावे जोडली` : " जोडले"));
     });
+  }
+
+  // Lines pasted from a web table / Excel: "[अ.क्र.] नाव [, गाव] [लोकसंख्या]".
+  const HEADER_WORDS = /^(अ\.?\s*क्र\.?|क्र\.?|ग्रामपंचायत(चे नाव)?|गाव(ाचे नाव)?|गावे|लोकसंख्या|sr\.?\s*no\.?|village( name)?|gram ?panchayat( name)?|population)$/i;
+  function parseBulk(text) {
+    const rows = [];
+    for (const line of text.split(/\r?\n/)) {
+      // Excel/web tables paste as tabs; only fall back to commas when there are none
+      let cells = line.split(line.includes("\t") ? /\t/ : /,|;|\|/).map((s) => s.trim()).filter(Boolean);
+      if (!cells.length || cells.every((c) => HEADER_WORDS.test(c))) continue;
+      while (cells.length > 1 && /^\d+[.)]?$/.test(cells[0])) cells.shift();          // serial no.
+      cells[0] = cells[0].replace(/^\d+[.)]\s*/, "");                                  // "12. देवगाव"
+      let pop = "";
+      if (cells.length > 1 && /^[\d०-९,]+$/.test(cells[cells.length - 1])) {
+        pop = cells.pop().replace(/[०-९]/g, (ch) => String("०१२३४५६७८९".indexOf(ch))).replace(/,/g, "");
+      }
+      const names = cells.filter((c) => /[^\d\s.,]/.test(c));
+      if (!names.length) continue;
+      rows.push({ name: names[0], village: names[1] || "", pop });
+    }
+    return rows;
   }
 
   // ------------------------------------------------------------ backup
