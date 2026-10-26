@@ -232,8 +232,8 @@ hr{border:0;border-top:1px solid var(--line);margin:14px 0}
 const PAY_CONFIG = {
   enabled: true,                 // false = पेमेंटशिवाय PDF (स्वतःच्या वापरासाठी)
   amount: 100,                   // प्रति PDF रुपये
-  upiId: "yourname@upi",         // आपला UPI ID (उदा. 98xxxxxx10@ybl)
-  payeeName: "Your Name",        // UPI मध्ये दिसणारे नाव (इंग्रजीत)
+  upiId: "mrk29k@axl",           // आपला UPI ID (PhonePe QR मधील)
+  payeeName: "Saba Firdos Shaikh Khaleeque Hussain", // UPI मध्ये दिसणारे नाव
   whatsapp: "919999999999",      // कोड मागवण्यासाठी WhatsApp क्रमांक, 91 सह
   serviceName: "विहीर अधिग्रहण प्रस्ताव सेवा",
 };
@@ -3261,7 +3261,7 @@ ${sigThree(d, 22)}`];
   function upiLink(id) {
     const q = new URLSearchParams({ pa: PAY_CONFIG.upiId, pn: PAY_CONFIG.payeeName,
       am: PAY_CONFIG.amount.toFixed(2), cu: "INR", tn: id });
-    return "upi://pay?" + q.toString().replace(/\+/g, "%20");
+    return "upi://pay?" + q.toString().replace(/\+/g, "%20").replace(/%40/g, "@");
   }
 
   function qrSvg(text) {

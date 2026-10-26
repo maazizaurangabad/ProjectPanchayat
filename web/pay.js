@@ -72,7 +72,7 @@
   function upiLink(id) {
     const q = new URLSearchParams({ pa: PAY_CONFIG.upiId, pn: PAY_CONFIG.payeeName,
       am: PAY_CONFIG.amount.toFixed(2), cu: "INR", tn: id });
-    return "upi://pay?" + q.toString().replace(/\+/g, "%20");
+    return "upi://pay?" + q.toString().replace(/\+/g, "%20").replace(/%40/g, "@");
   }
 
   function qrSvg(text) {
