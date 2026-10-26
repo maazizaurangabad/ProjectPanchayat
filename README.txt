@@ -1,20 +1,36 @@
-खाजगी विहीर अधिग्रहण प्रस्ताव — Excel → प्रत्येक व्यक्तीसाठी PDF
+खाजगी विहीर अधिग्रहण प्रस्ताव — प्रत्येक विहीर मालकासाठी २५ पानी PDF
 =====================================================================
 
-फोल्डरमधील फाईल्स
-  generate.py        मुख्य स्क्रिप्ट
-  Vihir_Data.xlsx    माहिती भरण्याचे Excel (Data शीट; सूचना शीट वाचा)
-  fonts/             Mukta मराठी फॉन्ट (हा फोल्डर generate.py सोबतच ठेवा)
-  Blank_Form.pdf     स्वच्छ रिकामा फॉर्म (25 पाने)
-  output/            तयार झालेल्या PDF येथे येतात
+दोन पद्धती आहेत:
 
-एकदाच सेटअप (Windows / Linux / Mac)
-  pip install openpyxl playwright
-  python -m playwright install chromium
+अ) ॲप (शिफारस) — Vihir_Adhigrahan_App.html
+   ही एकच फाईल Chrome / Edge मध्ये उघडा. इंटरनेट किंवा install लागत नाही.
 
-वापर
-  python generate.py                 → Vihir_Data.xlsx मधील प्रत्येक ओळीची PDF
-  python generate.py "Badnapur.xlsx" → दुसरी Excel फाईल
-  python generate.py --blank         → रिकामा फॉर्म पुन्हा तयार करणे
+   • नवीन / संपादन   — जिल्हा → तालुका → ग्रामपंचायत → गाव यादीतून निवडा ("+" ने नवीन जोडा).
+                        गाव निवडताच सरपंच, ग्रामसेवक, लोकसंख्या, हातपंप, आराखडा इ. माहिती आपोआप भरते.
+                        फक्त मालकाचे नाव, गट क्र., दिनांक भरा → "जतन करा व PDF पहा" → Save as PDF.
+                        "जतन करा + याच गावासाठी पुढील" ने त्याच गावासाठी अनेक प्रस्ताव पटापट भरता येतात.
+   • प्रस्ताव यादी    — सर्व जतन केलेले प्रस्ताव; तालुका/गावानुसार फिल्टर, शोध, उघडा, PDF, नक्कल, हटवा.
+   • गाव व पदाधिकारी — तालुका अधिकारी, ग्रा.पं. पदाधिकारी, गावाची माहिती एकदाच भरा.
+                        "एकदम अनेक गावे जोडा" मध्ये गावांची यादी पेस्ट करता येते.
+   • बॅकअप          — माहिती फक्त त्या ब्राउझरमध्ये राहते. नियमित बॅकअप (.json) डाउनलोड करा;
+                        दुसऱ्या संगणकावर "बॅकअप परत आणा". CSV निर्यात generate.py साठी वापरता येते.
 
-PDF चे नाव:  001_गाव_मालकाचेनाव.pdf
+ब) Python (Excel/CSV वरून एकदम अनेक PDF)
+   एकदाच:  pip install openpyxl playwright
+           python -m playwright install chromium
+   वापर:   python generate.py                       → Vihir_Data.xlsx मधील प्रत्येक ओळीची PDF (output/)
+           python generate.py "Badnapur.xlsx"       → दुसरी Excel फाईल
+           python generate.py Vihir_Proposals.csv   → ॲपमधून निर्यात केलेली CSV
+           python generate.py --blank               → रिकामा फॉर्म (Blank_Form.pdf)
+   अपूर्ण ओळींची यादी स्क्रीनवर येते; एकाच नावाच्या PDF एकमेकांवर लिहिल्या जात नाहीत.
+   Excel मध्ये "जिल्हा" / "तालुका" कॉलम नसल्यास "जालना" वापरले जाते.
+
+फोल्डर
+  Vihir_Adhigrahan_App.html  तयार ॲप (build_app.py ने बनते — थेट बदलू नका)
+  web/form.js, form.css      २५ पानांची मांडणी (ॲप व generate.py दोन्ही हीच वापरतात)
+  web/app.html, app.js, app.css   ॲपचा कोड
+  build_app.py               web/ बदलल्यानंतर: python build_app.py
+  generate.py                Excel/CSV → PDF
+  fonts/                     Mukta मराठी फॉन्ट
+  docs/                      मार्गदर्शक व नमुना PDF

@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="mr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>विहीर अधिग्रहण प्रस्ताव</title>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<header class="top">
+  <div class="brand">खाजगी विहीर अधिग्रहण प्रस्ताव<small>माहिती भरा → जतन करा → २५ पानी PDF</small></div>
+  <nav>
+    <button class="tab" data-tab="form">नवीन / संपादन</button>
+    <button class="tab" data-tab="list">प्रस्ताव यादी</button>
+    <button class="tab" data-tab="masters">गाव व पदाधिकारी माहिती</button>
+    <button class="tab" data-tab="backup">बॅकअप व सेटिंग</button>
+  </nav>
+</header>
+
+<main>
+  <!-- ============ entry form ============ -->
+  <section class="pane" id="pane-form" hidden>
+    <div class="titlebar"><h2 id="formTitle">नवीन प्रस्ताव</h2>
+      <button id="btnNew">+ कोरा नवीन प्रस्ताव</button></div>
+
+    <div class="card place">
+      <div class="ctitle"><span>१. ठिकाण निवडा</span><em class="badge b-place">यादीतून निवडा · "+" ने नवीन जोडा</em></div>
+      <div class="grid" id="place"></div>
+      <div class="grid">
+        <label class="fld"><span>गाव/वाडी/तांडा/वस्ती (जेथे पाणी पुरवठा) — रिकामे = गाव</span>
+          <input type="text" id="f_wadi" list="dl_wadi" autocomplete="off"><datalist id="dl_wadi"></datalist></label>
+      </div>
+      <p class="muted" id="placeNote"></p>
+    </div>
+
+    <div id="groups"></div>
+
+    <div class="savebar">
+      <div id="issues" class="issues"></div>
+      <label class="chk"><input type="checkbox" id="remember" checked> ग्रा.पं. / गाव / तालुका माहिती पुढील वेळेसाठी लक्षात ठेवा</label>
+      <div class="btns">
+        <button id="btnSave">जतन करा</button>
+        <button id="btnNext">जतन करा + याच गावासाठी पुढील</button>
+        <button id="btnPdf" class="primary">जतन करा व PDF पहा</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ records ============ -->
+  <section class="pane" id="pane-list" hidden>
+    <div class="titlebar"><h2>प्रस्ताव यादी</h2><span class="muted" id="count"></span></div>
+    <div class="card">
+      <div class="grid" id="listPlace"></div>
+      <div class="grid"><label class="fld"><span>शोधा (मालक / गाव / गट क्र.)</span><input type="search" id="search"></label></div>
+    </div>
+    <div class="tablewrap">
+      <table class="list">
+        <thead><tr><th>#</th><th>दिनांक</th><th>विहीर मालक</th><th>गाव / वाडी</th><th>तालुका</th><th>स्थिती</th><th></th></tr></thead>
+        <tbody id="listBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============ masters ============ -->
+  <section class="pane" id="pane-masters" hidden>
+    <div class="titlebar"><h2>गाव व पदाधिकारी माहिती</h2></div>
+    <p class="muted">येथे एकदा भरलेली माहिती (सरपंच, ग्रामसेवक, लोकसंख्या, हातपंप, आराखडा…) गाव निवडताच प्रस्तावात आपोआप येते.</p>
+    <div class="card"><div class="grid" id="mPlace"></div></div>
+    <div class="card" id="mEditor"></div>
+  </section>
+
+  <!-- ============ backup ============ -->
+  <section class="pane" id="pane-backup" hidden>
+    <div class="titlebar"><h2>बॅकअप व सेटिंग</h2></div>
+    <div class="card">
+      <h3>बॅकअप</h3>
+      <p>सर्व माहिती फक्त <b>या संगणकाच्या या ब्राउझरमध्ये</b> साठवली जाते. ब्राउझरचा इतिहास/डेटा साफ केल्यास ती जाऊ शकते —
+        म्हणून नियमित बॅकअप फाईल डाउनलोड करून ठेवा. दुसऱ्या संगणकावर ती फाईल "परत आणा" ने उघडा.</p>
+      <p class="muted" id="backupInfo"></p>
+      <div class="btns left">
+        <button id="btnExport" class="primary">बॅकअप फाईल डाउनलोड करा</button>
+        <label class="button">बॅकअप परत आणा<input type="file" id="fileImport" accept=".json,application/json" hidden></label>
+        <button id="btnCsv">सर्व प्रस्ताव CSV (Excel) मध्ये</button>
+      </div>
+    </div>
+    <div class="card">
+      <h3>PDF सेटिंग</h3>
+      <label class="chk"><input type="checkbox" id="mrDigits"> भरलेले आकडे मराठी अंकात छापा (१४५, १५/०१/२०२७)</label>
+      <p class="btns left"><button id="btnBlank">रिकामा फॉर्म छापा</button></p>
+      <p class="muted">PDF साठी: "PDF पहा" → "प्रिंट / PDF जतन" → Destination मध्ये <b>Save as PDF</b> निवडा. Chrome / Edge वापरा.</p>
+    </div>
+  </section>
+</main>
+
+<div id="preview" hidden>
+  <div class="pvbar"><b id="pvTitle"></b>
+    <div><button id="pvPrint" class="primary">प्रिंट / PDF जतन</button> <button id="pvClose">बंद ✕</button></div></div>
+  <iframe id="pvFrame" title="पूर्वावलोकन"></iframe>
+</div>
+<div id="toast"></div>
+
+<script src="form.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

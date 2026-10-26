@@ -1,0 +1,60 @@
+@page{size:A4;margin:0}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{font-family:'Mukta',sans-serif;font-size:12.4pt;line-height:1.85;color:#000}
+.page{width:210mm;height:297mm;padding:16mm 18mm 14mm 20mm;position:relative;overflow:hidden;page-break-after:always}
+.page.land{width:297mm;height:210mm;padding:12mm 14mm}
+.pno{position:absolute;top:8mm;right:12mm;border:1px solid #000;min-width:9mm;text-align:center;font-size:10.5pt;line-height:1.5;padding:0 1.5mm}
+.foot{position:absolute;bottom:6mm;left:20mm;right:14mm;font-size:8.5pt;color:#777;border-top:0.5px solid #bbb;line-height:1.6}
+h1{text-align:center;font-size:19pt;margin:4mm 0 2mm;font-weight:700}
+h2{text-align:center;font-size:15pt;margin:3mm 0 2mm;font-weight:700;line-height:1.45}
+h3{font-size:13pt;margin:1mm 0 4mm}
+.ul{text-decoration:underline;text-underline-offset:3px}
+.ctr{text-align:center}.rt{text-align:right;margin:0}
+p{margin:0 0 2.5mm}
+.j{text-align:justify;text-indent:12mm}
+ol .j,li.j,ol.j li{text-indent:0}
+.big{font-size:13.2pt;line-height:2.05}
+.sm{font-size:11pt;line-height:1.7}
+.f{display:inline-block;border-bottom:1px dotted #000;text-align:center;font-weight:600;line-height:1.25;padding:0 1.5mm;text-indent:0}
+.f.date{font-weight:400;color:#333}
+.row2{display:flex;justify-content:space-between;margin:1mm 0 3mm}
+.addr{margin:2mm 0 4mm;line-height:1.6}
+.subj{margin-left:14mm;text-indent:-14mm}
+ol{margin:0 0 2mm;padding-left:8mm} ul{margin:1mm 0;padding-left:7mm}
+ol.att{columns:2;column-gap:8mm;font-size:11.5pt;line-height:1.65;margin-top:0}
+.sig{display:flex;justify-content:space-between;line-height:1.6}
+.sig>div{width:48%}.sig .r{text-align:right}
+.sig.three>div{width:32%}.sig .c{text-align:center}
+.nm{font-size:10.5pt;color:#222;font-weight:600}
+table{border-collapse:collapse}
+table.grid{width:100%;margin:2mm 0;font-size:11.2pt;line-height:1.45}
+.grid th,.grid td{border:1px solid #000;padding:1.5mm 2mm;vertical-align:middle}
+.grid td{height:8.5mm}
+.tight{font-size:11.6pt;line-height:1.68}
+.tight .j{text-indent:10mm}
+.fi{border-bottom:1px dotted #000;font-weight:600;padding:0 1.5mm}
+.grid th{font-weight:700;background:#f2f2f2;text-align:center}
+.grid.tall td{height:11mm}
+.grid.idx td{padding:2.2mm 2.5mm;font-size:11.6pt}
+.grid.land{font-size:10.6pt}.grid.land td{height:13mm}
+td.c{text-align:center}
+table.kv{width:100%;margin-top:4mm;font-size:11.8pt}
+.kv th,.kv td{border:1px solid #000;padding:2mm 3mm}
+.kv th.lbl{text-align:left;font-weight:600;width:52%;background:#f6f6f6}
+table.lines{width:100%;margin:1mm 0 3mm}
+.lines td{padding:0.6mm 0;vertical-align:bottom}
+.lines td:first-child{width:auto;padding-right:3mm}
+td.ind{padding-left:9mm!important}
+table.sigtab{width:85%;margin:2mm 0}
+.sigtab td{padding:2.6mm 0;vertical-align:bottom}
+.sigtab td.n{width:8mm}
+.sigtab td.nm2{border-bottom:1px dotted #000;width:60%;font-weight:600}
+.sigtab td.sg{border-bottom:1px dotted #000;color:#999;font-size:9.5pt;text-align:right;padding-left:5mm}
+ol.pn li{margin:1mm 0}
+hr.cut{border:0;border-top:1px dashed #888;margin:10mm 0 6mm}
+.boxtitle{margin-left:auto;width:max-content;border:1.5px solid #000;padding:1mm 4mm;font-weight:700;font-size:13pt;box-shadow:3px 3px 0 #000}
+.stamp{height:60mm;border:1px dashed #aaa;display:flex;align-items:center;justify-content:center;color:#aaa;font-size:11pt;margin-bottom:4mm}
+.photo{border:1.5px dashed #888;margin:5mm 0;display:flex;align-items:flex-end;justify-content:center;color:#888}
+.photo span{padding:2mm;font-size:11pt}
+.wline{border-bottom:1px solid #000;height:10mm}
