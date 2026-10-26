@@ -472,21 +472,28 @@
   }
 
   // ------------------------------------------------------------ print
-  function docHtml(data) {
+  function docHtml(data, locked) {
     const screen = "@media screen{html{background:#525659}body{padding:12px 0}" +
       ".page{background:#fff;margin:0 auto 12px;box-shadow:0 2px 10px rgba(0,0,0,.4)}}";
-    return VihirForm.renderDocument(data, { fontCss: FONT_CSS, css: FORM_CSS + screen, mrDigits: !!db.settings.mrDigits });
+    return VihirForm.renderDocument(data, { fontCss: FONT_CSS, css: FORM_CSS + screen, mrDigits: !!db.settings.mrDigits,
+      watermark: locked ? "नमुना — पेमेंट बाकी" : "" });
   }
 
-  function preview(data, title) {
-    const fr = $("#pvFrame");
-    $("#pvTitle").textContent = title || "पूर्वावलोकन";
+  let pv = null;  // what the preview shows: {data, title, unlocked}
+
+  // free = the blank form; everything else needs payment unless already unlocked
+  async function preview(data, title, free) {
+    const unlocked = free || await VihirPay.isUnlocked(data);
+    pv = { data, title, unlocked };
+    $("#pvTitle").textContent = (title || "पूर्वावलोकन") + (unlocked ? "" : " — नमुना");
+    $("#pvPrint").textContent = unlocked ? "प्रिंट / PDF जतन" : `₹${PAY_CONFIG.amount} भरा व PDF मिळवा`;
     $("#preview").hidden = false;
     document.body.classList.add("noscroll");
-    fr.srcdoc = docHtml(data);
+    $("#pvFrame").srcdoc = docHtml(data, !unlocked);
   }
 
   function printPreview() {
+    if (!pv.unlocked) return VihirPay.open(pv.data, () => preview(pv.data, pv.title));
     const w = $("#pvFrame").contentWindow;
     const go = () => { w.focus(); w.print(); };
     (w.document.fonts ? w.document.fonts.ready : Promise.resolve()).then(go, go);
@@ -673,6 +680,7 @@
     st.textContent = FONT_CSS;
     document.head.appendChild(st);
     load();
+    VihirPay.init({ db: () => db, save, toast });
     buildForm();
 
     formCascade = cascade($("#place"), 4, onPlaceChange, true);
@@ -698,7 +706,12 @@
     $("#btnExport").addEventListener("click", exportBackup);
     $("#btnCsv").addEventListener("click", exportCsv);
     $("#fileImport").addEventListener("change", (e) => { if (e.target.files[0]) importBackup(e.target.files[0]); e.target.value = ""; });
-    $("#btnBlank").addEventListener("click", () => preview({}, "रिकामा फॉर्म"));
+    $("#btnBlank").addEventListener("click", () => preview({}, "रिकामा फॉर्म", true));
+    $("#btnMaster").addEventListener("click", async () => {
+      const ok = await VihirPay.tryCode($("#masterCode").value, "ADMIN");
+      toast(ok ? "✔ मास्टर कोड स्वीकारला — या ब्राउझरमध्ये सर्व PDF पेमेंटशिवाय" : "✕ मास्टर कोड चुकीचा", !ok);
+      if (ok) $("#masterCode").value = "";
+    });
     $("#mrDigits").addEventListener("change", (e) => { db.settings.mrDigits = e.target.checked; save(); });
 
     onPlaceChange(formCascade.path());

@@ -94,6 +94,12 @@
       <p class="btns left"><button id="btnBlank">रिकामा फॉर्म छापा</button></p>
       <p class="muted">PDF साठी: "PDF पहा" → "प्रिंट / PDF जतन" → Destination मध्ये <b>Save as PDF</b> निवडा. Chrome / Edge वापरा.</p>
     </div>
+    <div class="card">
+      <h3>सेवा देणाऱ्यासाठी — मास्टर कोड</h3>
+      <p class="muted">आपल्या स्वतःच्या संगणकावर पेमेंटशिवाय सर्व PDF छापण्यासाठी Vihir_Admin.html मधील मास्टर कोड येथे पेस्ट करा.</p>
+      <textarea id="masterCode" rows="2" spellcheck="false"></textarea>
+      <p class="btns left"><button id="btnMaster">मास्टर कोड लावा</button></p>
+    </div>
   </section>
 </main>
 
@@ -102,9 +108,13 @@
     <div><button id="pvPrint" class="primary">प्रिंट / PDF जतन</button> <button id="pvClose">बंद ✕</button></div></div>
   <iframe id="pvFrame" title="पूर्वावलोकन"></iframe>
 </div>
+<div id="pay" hidden></div>
 <div id="toast"></div>
 
+<script src="config.js"></script>
+<script src="vendor/qrcode.js"></script>
 <script src="form.js"></script>
+<script src="pay.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

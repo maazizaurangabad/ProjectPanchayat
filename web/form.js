@@ -617,13 +617,22 @@ ${sigThree(d, 22)}`];
     if (d.get("gav")) {
       foot = `<div class="foot">खाजगी विहीर अधिग्रहण प्रस्ताव — मौजे ${esc(d.g("gav"))} — श्री. ${esc(d.g("owner"))} — गट क्र. ${esc(d.g("gat"))}</div>`;
     }
+    // unpaid preview: repeated diagonal stamp over every page
+    const wm = opts && opts.watermark
+      ? `<div class="wm">${Array(5).fill(`<span>${esc(opts.watermark)}</span>`).join("")}</div>` : "";
     return buildPages(d).map(([kind, content, pno]) =>
-      `<section class="${kind === "land" ? "page land" : "page"}"><div class="pno">${mrDigits(pno)}</div>${content}${foot}</section>`).join("");
+      `<section class="${kind === "land" ? "page land" : "page"}"><div class="pno">${mrDigits(pno)}</div>${content}${foot}${wm}</section>`).join("");
   }
 
   function renderDocument(raw, opts) {
     opts = opts || {};
-    const land = "@page land{size:A4 landscape;margin:0}.page.land{page:land}";
+    let land = "@page land{size:A4 landscape;margin:0}.page.land{page:land}";
+    if (opts.watermark) {
+      land += ".wm{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:space-around;align-items:center;" +
+        "pointer-events:none;overflow:hidden}.wm span{transform:rotate(-30deg);white-space:nowrap;font-size:44pt;font-weight:700;" +
+        "color:rgba(190,30,30,.2)}@media print{body>*{display:none!important}" +
+        "body::after{content:'पेमेंट झाल्यानंतरच PDF छापता येईल.';display:block;font-size:20pt;padding:30mm}}";
+    }
     return `<!doctype html><html lang="mr"><head><meta charset="utf-8"><title>${esc((raw && raw.owner) || "विहीर अधिग्रहण प्रस्ताव")}</title>` +
       `<style>${opts.fontCss || ""}${opts.css || ""}${land}</style></head><body>${renderBody(raw, opts)}</body></html>`;
   }

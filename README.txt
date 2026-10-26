@@ -30,10 +30,26 @@
    अपूर्ण ओळींची यादी स्क्रीनवर येते; एकाच नावाच्या PDF एकमेकांवर लिहिल्या जात नाहीत.
    Excel मध्ये "जिल्हा" / "तालुका" कॉलम नसल्यास "जालना" वापरले जाते.
 
+पेमेंट (₹100 प्रति PDF — UPI, हाताने तपासणी)
+  • PDF पहा → "नमुना — पेमेंट बाकी" शिक्का; छापता येत नाही.
+  • "₹100 भरा व PDF मिळवा" → UPI QR + अर्ज कोड → ग्राहक UTR सह WhatsApp वर पाठवतो.
+  • आपण बँक ॲपमध्ये पेमेंट तपासून private/Vihir_Admin.html मध्ये संदेश पेस्ट करा → अनलॉक कोड → WhatsApp.
+  • ग्राहक कोड पेस्ट करतो → त्याच अर्जाची स्वच्छ PDF. एक कोड फक्त एका अर्जासाठी (गाव + गट + मालक).
+  • आपल्या संगणकासाठी: Admin मधील "मास्टर कोड" → ॲप → बॅकअप व सेटिंग → मास्टर कोड.
+  सेटअप (एकदाच):
+    pip install cryptography
+    python make_keys.py          → private/keys.json (गुप्त! हरवल्यास दिलेले कोड चालणार नाहीत — सुरक्षित बॅकअप ठेवा)
+    web/config.js मध्ये UPI ID, नाव, WhatsApp क्रमांक भरा
+    python build_app.py          → Vihir_Adhigrahan_App.html (लोकांसाठी) + private/Vihir_Admin.html (फक्त आपल्यासाठी)
+  private/ फोल्डर git मध्ये जात नाही व कोणालाही देऊ नये.
+
 फोल्डर
   Vihir_Adhigrahan_App.html  तयार ॲप (build_app.py ने बनते — थेट बदलू नका)
   web/form.js, form.css      २५ पानांची मांडणी (ॲप व generate.py दोन्ही हीच वापरतात)
   web/app.html, app.js, app.css   ॲपचा कोड
+  web/pay.js, config.js, admin.html   पेमेंट / अनलॉक कोड
+  web/vendor/qrcode.js       QR कोड (MIT, Kazuhiko Arase)
+  make_keys.py               अनलॉक कोडसाठी की (एकदाच)
   build_app.py               web/ बदलल्यानंतर: python build_app.py
   generate.py                Excel/CSV → PDF
   fonts/                     Mukta मराठी फॉन्ट

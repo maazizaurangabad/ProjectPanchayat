@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="mr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>अनलॉक कोड — Admin</title>
+<style>
+:root{--bg:#f4f5f2;--card:#fff;--ink:#1d2320;--muted:#66706a;--line:#d9ddd6;--accent:#7a3b12;--bad:#b3261e;--ok:#1f6f54}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Nirmala UI','Mukta',system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:16px;line-height:1.5}
+header{background:var(--accent);color:#fff;padding:10px 16px;font-weight:700;font-size:18px}
+header small{display:block;font-weight:400;font-size:13px;opacity:.9}
+main{max-width:980px;margin:0 auto;padding:12px 16px 60px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin:12px 0}
+h3{margin:4px 0 8px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px 14px}
+label{display:flex;flex-direction:column;font-size:14px;color:var(--muted);gap:2px}
+input,textarea{font:inherit;font-size:16px;padding:6px 8px;border:1px solid var(--line);border-radius:6px;color:var(--ink);width:100%}
+textarea{font-family:monospace;font-size:13px}
+button{font:inherit;background:#fff;border:1px solid var(--line);border-radius:6px;padding:6px 14px;cursor:pointer}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+.btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.muted{color:var(--muted);font-size:14px}
+.warn{color:var(--bad);font-size:14px}
+.out{display:none;background:#f7f2ec;border:1px dashed var(--accent);border-radius:8px;padding:10px;margin-top:10px}
+.out textarea{background:#fff}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+th{color:var(--muted);background:#fafaf8}
+.wrap{overflow-x:auto}
+#toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#222;color:#fff;padding:8px 16px;border-radius:8px;display:none}
+@media (max-width:600px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>अनलॉक कोड तयार करा — फक्त सेवा देणाऱ्यासाठी<small>ही फाईल कोणालाही देऊ नका. यात कोड तयार करण्याची गुप्त की आहे.</small></header>
+<main>
+  <div class="card">
+    <h3>१. ग्राहकाचा WhatsApp संदेश पेस्ट करा</h3>
+    <textarea id="msg" rows="5" placeholder="अर्ज कोड: VH-XXXX-XXXX&#10;UTR: 412345678901&#10;..."></textarea>
+    <p class="muted">अर्ज कोड, UTR, मोबाईल, मालक व गाव आपोआप खाली भरले जातील.</p>
+  </div>
+
+  <div class="card">
+    <h3>२. बँक ॲपमध्ये पेमेंट तपासा, मग कोड तयार करा</h3>
+    <div class="grid">
+      <label>अर्ज कोड<input id="rid" placeholder="VH-XXXX-XXXX" autocomplete="off"></label>
+      <label>UTR / Transaction ID<input id="utr" autocomplete="off"></label>
+      <label>ग्राहक मोबाईल<input id="mob" inputmode="tel" autocomplete="off"></label>
+      <label>रक्कम ₹<input id="amt" type="number" min="0"></label>
+      <label>मालक / गाव (नोंदीसाठी)<input id="note" autocomplete="off"></label>
+    </div>
+    <p id="warn" class="warn"></p>
+    <div class="btns"><button id="make" class="primary">पेमेंट मिळाले — कोड तयार करा</button></div>
+    <div class="out" id="out">
+      <label>अनलॉक कोड (ग्राहकाला पाठवा)<textarea id="code" rows="3" readonly></textarea></label>
+      <div class="btns"><button id="copy">कोड कॉपी करा</button><button id="wa" class="primary">WhatsApp वर पाठवा</button></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>नोंदवही</h3>
+    <p class="muted" id="sum"></p>
+    <div class="wrap"><table><thead><tr><th>दिनांक</th><th>अर्ज कोड</th><th>UTR</th><th>मोबाईल</th><th>₹</th><th>नोंद</th></tr></thead><tbody id="log"></tbody></table></div>
+    <div class="btns"><button id="csv">CSV डाउनलोड</button></div>
+  </div>
+
+  <div class="card">
+    <h3>मास्टर कोड (आपल्या स्वतःच्या संगणकासाठी)</h3>
+    <p class="muted">हा कोड ॲपच्या "बॅकअप व सेटिंग → मास्टर कोड" मध्ये लावल्यास त्या ब्राउझरमध्ये सर्व PDF पेमेंटशिवाय छापता येतात. कोणालाही देऊ नका.</p>
+    <div class="btns"><button id="master">मास्टर कोड दाखवा</button></div>
+    <textarea id="masterOut" rows="3" readonly style="display:none;margin-top:8px"></textarea>
+  </div>
+</main>
+<div id="toast"></div>
+
+<script src="config.js"></script>
+<script>
+(function () {
+  "use strict";
+  const $ = (s) => document.querySelector(s);
+  const h = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const LOG_KEY = "vihir_admin_log_v1";
+  const enc = new TextEncoder();
+  let key;
+
+  function toast(t) { const el = $("#toast"); el.textContent = t; el.style.display = "block"; clearTimeout(toast.t); toast.t = setTimeout(() => (el.style.display = "none"), 2600); }
+  function log() { try { return JSON.parse(localStorage.getItem(LOG_KEY)) || []; } catch (e) { return []; } }
+  function setLog(l) { try { localStorage.setItem(LOG_KEY, JSON.stringify(l)); } catch (e) { toast("⚠ नोंद जतन झाली नाही"); } }
+
+  async function sign(subject) {
+    if (!key) key = await crypto.subtle.importKey("jwk", PAY_PRIVATE_KEY, { name: "ECDSA", namedCurve: "P-256" }, false, ["sign"]);
+    const sig = new Uint8Array(await crypto.subtle.sign({ name: "ECDSA", hash: "SHA-256" }, key, enc.encode("vihir1:" + subject)));
+    return btoa(String.fromCharCode(...sig)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  }
+
+  const normId = (s) => String(s || "").toUpperCase().replace(/[^0-9A-Z]/g, "").replace(/^VH/, "");
+  const fmtId = (s) => { const x = normId(s); return x.length === 8 ? `VH-${x.slice(0, 4)}-${x.slice(4)}` : ""; };
+
+  function parseMsg() {
+    const t = $("#msg").value;
+    const grab = (re) => { const m = re.exec(t); return m ? m[1].trim() : ""; };
+    const rid = grab(/(VH-?[0-9A-Z]{4}-?[0-9A-Z]{4})/i);
+    if (rid) $("#rid").value = fmtId(rid);
+    const utr = grab(/UTR\s*:?\s*([A-Za-z0-9]+)/i); if (utr) $("#utr").value = utr;
+    const mob = grab(/मोबाईल\s*:?\s*(\+?\d[\d ]{9,13})/); if (mob) $("#mob").value = mob.replace(/\D/g, "");
+    const amt = grab(/₹\s*(\d+)/); if (amt) $("#amt").value = amt;
+    const owner = grab(/मालक\s*:?\s*(.+)/), gav = grab(/गाव\s*:?\s*([^,\n]+)/);
+    if (owner || gav) $("#note").value = [owner, gav].filter(Boolean).join(" — ");
+    check();
+  }
+
+  function check() {
+    const utr = $("#utr").value.trim(), rid = fmtId($("#rid").value);
+    const l = log();
+    const w = [];
+    if ($("#rid").value && !rid) w.push("अर्ज कोड VH-XXXX-XXXX असा असावा.");
+    const dupU = utr && l.find((x) => x.utr === utr);
+    if (dupU) w.push(`⚠ हा UTR ${dupU.date} रोजी अर्ज ${dupU.rid} साठी आधीच वापरला आहे — एका पेमेंटवर दोन कोड देऊ नका.`);
+    const dupR = rid && l.find((x) => x.rid === rid);
+    if (dupR) w.push(`या अर्जासाठी ${dupR.date} रोजी आधीच कोड दिला आहे (तोच कोड पुन्हा तयार होईल).`);
+    $("#warn").textContent = w.join(" ");
+  }
+
+  function renderLog() {
+    const l = log();
+    $("#log").innerHTML = l.slice().reverse().map((x) =>
+      `<tr><td>${h(x.date)}</td><td>${h(x.rid)}</td><td>${h(x.utr)}</td><td>${h(x.mob)}</td><td>${h(x.amt)}</td><td>${h(x.note)}</td></tr>`).join("");
+    const total = l.reduce((a, x) => a + (+x.amt || 0), 0);
+    $("#sum").textContent = `एकूण ${l.length} कोड · ₹${total}`;
+  }
+
+  $("#msg").addEventListener("input", parseMsg);
+  ["rid", "utr"].forEach((id) => $("#" + id).addEventListener("input", check));
+  $("#amt").value = PAY_CONFIG.amount;
+
+  $("#make").addEventListener("click", async () => {
+    const rid = fmtId($("#rid").value), utr = $("#utr").value.trim();
+    if (!rid) return toast("योग्य अर्ज कोड भरा");
+    if (!utr) return toast("UTR भरा — नोंदीसाठी आवश्यक");
+    const l = log();
+    if (l.find((x) => x.utr === utr && x.rid !== rid) && !confirm("हा UTR आधी दुसऱ्या अर्जासाठी वापरला आहे. तरीही कोड द्यायचा?")) return;
+    const code = await sign(rid);
+    $("#code").value = code;
+    $("#out").style.display = "block";
+    if (!l.find((x) => x.rid === rid && x.utr === utr)) {
+      l.push({ date: new Date().toLocaleString("en-IN"), rid, utr, mob: $("#mob").value.replace(/\D/g, ""), amt: $("#amt").value, note: $("#note").value.trim() });
+      setLog(l);
+    }
+    renderLog(); check();
+  });
+
+  $("#copy").addEventListener("click", () => navigator.clipboard.writeText($("#code").value).then(() => toast("✔ कॉपी केला"), () => {}));
+  $("#wa").addEventListener("click", () => {
+    let mob = $("#mob").value.replace(/\D/g, "");
+    if (mob.length === 10) mob = "91" + mob;
+    const text = `नमस्कार, ₹${$("#amt").value} पेमेंट मिळाले. धन्यवाद!\nअर्ज ${fmtId($("#rid").value)} चा अनलॉक कोड खाली आहे — तो पूर्ण कॉपी करून ॲपमध्ये "अनलॉक कोड" मध्ये पेस्ट करा:\n\n${$("#code").value}`;
+    window.open(`https://wa.me/${mob}?text=${encodeURIComponent(text)}`, "_blank", "noopener");
+  });
+
+  $("#csv").addEventListener("click", () => {
+    const cell = (v) => `"${String(v == null ? "" : v).replace(/"/g, '""')}"`;
+    const rows = [["date", "application", "utr", "mobile", "amount", "note"]].concat(log().map((x) => [x.date, x.rid, x.utr, x.mob, x.amt, x.note]));
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob(["﻿" + rows.map((r) => r.map(cell).join(",")).join("\r\n")], { type: "text/csv" }));
+    a.download = "Vihir_Payments.csv"; document.body.appendChild(a); a.click(); a.remove();
+  });
+
+  $("#master").addEventListener("click", async () => {
+    const t = $("#masterOut"); t.value = await sign("ADMIN"); t.style.display = "block";
+  });
+
+  renderLog();
+})();
+</script>
+</body>
+</html>

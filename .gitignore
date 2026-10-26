@@ -1,3 +1,5 @@
 output/
 __pycache__/
 *.pyc
+# signing key and admin tool — never share or commit
+private/
