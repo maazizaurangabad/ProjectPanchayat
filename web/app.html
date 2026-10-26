@@ -21,7 +21,12 @@
   <!-- ============ entry form ============ -->
   <section class="pane" id="pane-form" hidden>
     <div class="titlebar"><h2 id="formTitle">नवीन प्रस्ताव</h2>
-      <button id="btnNew">+ कोरा नवीन प्रस्ताव</button></div>
+      <div class="btns">
+        <label class="button" title="आधी जतन केलेली माहिती फाईलमधून भरा">📂 फाईल उघडा<input type="file" id="fileLoad" accept=".json,application/json" hidden></label>
+        <button id="btnSaveFile" title="भरलेली सर्व माहिती फाईलमध्ये जतन करा — पुढील अर्जासाठी फक्त नाव बदला">💾 फाईल म्हणून जतन करा</button>
+        <button id="btnNew">+ कोरा नवीन प्रस्ताव</button>
+      </div></div>
+    <p class="muted hint">एकाच गावातील अनेक अर्ज: एकदा सर्व माहिती भरा → "💾 फाईल म्हणून जतन करा". पुढे "📂 फाईल उघडा" → फक्त अर्जदाराचे नाव, गट क्र. बदला → जतन करा.</p>
 
     <div class="card place">
       <div class="ctitle"><span>१. ठिकाण निवडा</span><em class="badge b-place">यादीतून निवडा · "+" ने नवीन जोडा</em></div>

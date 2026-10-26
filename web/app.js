@@ -288,10 +288,14 @@
     const w = $("#f_wadi");
     if (w.value && nodes.length < 4) w.value = "";
     if (!w.value && wl.length === 1) w.value = wl[0];
+    placeNote(nodes);
+    validate();
+  }
+
+  function placeNote(nodes) {
     $("#placeNote").textContent = nodes.length === 4
       ? `${nodes[3].name} — मागील माहिती भरली आहे. बदल केल्यास "पुढील वेळेसाठी लक्षात ठेवा" ने जतन होईल.`
       : "गाव निवडल्यावर ग्रामपंचायत व गावाची साठवलेली माहिती आपोआप भरेल.";
-    validate();
   }
 
   function setVal(k, v) { const el = $("#f_" + k); if (el) el.value = v == null ? "" : v; }
@@ -354,6 +358,7 @@
     $("#dl_wadi").innerHTML = wadiList(lastPath).map((w) => `<option value="${h(w)}">`).join("");
     for (const f of FIELDS) setVal(f.key, p.data[f.key] || "");
     setVal("wadi", p.data.wadi || "");
+    placeNote(nodes);
     if (nodes.length < (p.path || []).length) toast("⚠ या प्रस्तावाचे गाव माहितीतून काढले गेले आहे — पुन्हा निवडा", true);
     if (asCopy) {
       editing = null;
@@ -389,6 +394,13 @@
     if ($("#remember").checked) rememberDefaults(path, d);
     const now = new Date().toISOString();
     let p = editing && db.proposals.find((x) => x.id === editing);
+    // Changing only the applicant's name and saving again usually means "next applicant",
+    // not "rename the one just saved" — ask instead of silently overwriting.
+    if (p && p.data.owner && d.owner && p.data.owner !== d.owner &&
+        confirm(`अर्जदाराचे नाव बदलले आहे ("${p.data.owner}" → "${d.owner}").\n\nOK = नवीन प्रस्ताव म्हणून जतन करा\nCancel = "${p.data.owner}" चाच प्रस्ताव बदला`)) {
+      p = null;
+      editing = null;
+    }
     if (p) Object.assign(p, { path, data: d, updated: now });
     else {
       p = { id: uid(), path, data: d, created: now, updated: now };
@@ -400,6 +412,63 @@
     const n = validate().length;
     toast(n ? `जतन केले (⚠ ${n} बाबी अपूर्ण)` : "✔ प्रस्ताव जतन केला");
     return p;
+  }
+
+  // ------------------------------------------------------------ form file (save / load)
+  const FILE_TYPE = "vihir-form";
+
+  function saveFormFile() {
+    const d = formData();
+    if (lastPath.length < 4) return toast("आधी ठिकाण (गावापर्यंत) निवडा", true);
+    const file = { type: FILE_TYPE, version: 1, saved: new Date().toISOString(),
+      place: { district: d.district, taluka: d.taluka, gp: d.gp, gav: d.gav }, data: d };
+    const safe = (s) => String(s || "").replace(/[\\/:*?"<>|]+/g, "").trim().replace(/\s+/g, "_");
+    download(`Vihir_${safe(d.gav)}_${safe(d.owner) || "माहिती"}.json`, JSON.stringify(file, null, 1), "application/json");
+    toast("✔ फाईल डाउनलोड झाली — पुढील अर्जासाठी ती \"📂 फाईल उघडा\" ने उघडा");
+  }
+
+  // Find the place by names; create whatever is missing (file may come from another computer).
+  function resolvePlace(place) {
+    const names = [place.district, place.taluka, place.gp, place.gav];
+    const path = [];
+    let list = db.masters, created = 0;
+    names.forEach((name, i) => {
+      if (!name) return;
+      let n = list.find((x) => x.name === name);
+      if (!n) { n = node(name, LEVELS[i] === "village" ? { wadis: [] } : null); list.push(n); created++; }
+      path.push(n.id);
+      list = n.children;
+    });
+    if (created) save();
+    return { path, created };
+  }
+
+  function loadFormFile(file) {
+    const r = new FileReader();
+    r.onload = () => {
+      let x;
+      try { x = JSON.parse(r.result); } catch (e) { return toast("ही फाईल वाचता आली नाही", true); }
+      if (!x || x.type !== FILE_TYPE || !x.data) {
+        return toast(x && Array.isArray(x.proposals) ? "ही पूर्ण बॅकअप फाईल आहे — ती \"बॅकअप व सेटिंग\" मधून परत आणा" : "ही विहीर अधिग्रहण माहिती फाईल नाही", true);
+      }
+      const { path, created } = resolvePlace(x.place || x.data);
+      showTab("form");
+      editing = null;
+      formCascade.set(path);
+      lastPath = formCascade.path();
+      $("#dl_wadi").innerHTML = wadiList(lastPath).map((w) => `<option value="${h(w)}">`).join("");
+      for (const f of FIELDS) setVal(f.key, x.data[f.key] || "");
+      setVal("wadi", x.data.wadi || "");
+      $("#formTitle").textContent = "नवीन प्रस्ताव (फाईलमधून)";
+      placeNote(nodesOf(lastPath));
+      validate();
+      window.scrollTo(0, 0);
+      const owner = $("#f_owner");
+      owner.focus();
+      owner.select();
+      toast(`✔ "${file.name}" मधील माहिती भरली — अर्जदाराचे नाव बदला व जतन करा` + (created ? ` (${created} नवीन ठिकाणे जोडली)` : ""));
+    };
+    r.readAsText(file);
   }
 
   // ------------------------------------------------------------ print
@@ -618,6 +687,8 @@
     });
     $("#btnNext").addEventListener("click", () => { if (saveProposal()) { newProposal(true); toast("✔ जतन केले — त्याच गावासाठी पुढील प्रस्ताव"); } });
     $("#btnNew").addEventListener("click", () => newProposal(false));
+    $("#btnSaveFile").addEventListener("click", saveFormFile);
+    $("#fileLoad").addEventListener("change", (e) => { if (e.target.files[0]) loadFormFile(e.target.files[0]); e.target.value = ""; });
     $$(".tab").forEach((b) => b.addEventListener("click", () => showTab(b.dataset.tab)));
     $("#listBody").addEventListener("click", onListClick);
     $("#search").addEventListener("input", renderList);
