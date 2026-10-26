@@ -2543,6 +2543,108 @@ var qrcode = function() {
 
 </script>
 <script>
+/* Built-in place lists, merged into every user's data on start (only adds, never removes or renames).
+ *
+ * MASTER_DATA[जिल्हा][तालुका] = [[ग्रामपंचायत (मराठी), English name as in source, [extra villages]], ...]
+ * A GP's own village has the GP's name; list only the additional villages of a गट ग्रामपंचायत.
+ *
+ * बदनापूर: 80 ग्रामपंचायती — villageinfo.in, "List of Village Panchayats in Badnapur" (LGD-based).
+ * Marathi spellings are transliterated from English and should be checked against the
+ * Panchayat Samiti / LGD list. GPs with 2 villages in the source whose second village is not
+ * yet known: अन्वी राळा, दाभाडी, काजळा, मानदेउळगांव, मसला भातखेडा, रामखेडा पाडळी, वाघ्रुळ (दा.).
+ */
+const MASTER_DATA_VERSION = 1;
+const MASTER_DATA = {
+  "जालना": {
+    "जालना": [],
+    "बदनापूर": [
+      ["अकोला", "Akola"],
+      ["आंबडगाव", "Ambadgaon"],
+      ["अन्वी राळा", "Anwirala"],
+      ["असरखेडा", "Asarkheda"],
+      ["आसोला", "Asola"],
+      ["बावणे पांगरी", "Bawanepangari"],
+      ["बाजार वाहेगाव", "Bazar Wahegaon"],
+      ["भाकरवाडी", "Bhakarwadi"],
+      ["भराडखेडा", "Bharadkheda"],
+      ["भिलपुरी", "Bhilpuri"],
+      ["बुटेगाव", "Butegaon"],
+      ["चणेगाव", "Chanegaon"],
+      ["चिखली", "Chikhali"],
+      ["चित्तोडा", "Chittoda"],
+      ["दाभाडी", "Dabahadi"],
+      ["डोंगरगाव (दा.)", "Daongargaon [Da]"],
+      ["दावलवाडी", "Dawalwadi"],
+      ["दावरगाव", "Dawargaon"],
+      ["देवगाव", "Deogaon"],
+      ["देवपिंपळगाव", "Deopimpalgaon"],
+      ["धामणगाव", "Dhamangaon"],
+      ["ढासला", "Dhasala"],
+      ["ढोकसाळ", "Dhoksaal"],
+      ["धोपटेश्वर", "Dhopteshwar"],
+      ["डोंगरगाव (सा.)", "Dongargaon [Sa]"],
+      ["दुधनवाडी", "Dudhanwadi"],
+      ["गेवराई बाजार", "Georai Bazar"],
+      ["घोटण", "Ghotan"],
+      ["गोकुळवाडी", "Gokulwadi"],
+      ["हलदोला", "Haldola"],
+      ["हनुमाननगर", "Hanumannagar"],
+      ["हिवरा राळा", "Hivararala"],
+      ["जवसगाव", "Jawasgaon"],
+      ["कडेगाव", "Kadegaon"],
+      ["काजळा", "Kajala"],
+      ["कंडारी बु.", "Kandari Bk."],
+      ["कंडारी खु.", "Kandari Kh."],
+      ["कस्तुरवाडी", "Kasturwadi"],
+      ["केळिगव्हाण", "Keligavan"],
+      ["खडकवाडी", "Khadakawadi"],
+      ["खडगाव", "Khadgaon"],
+      ["खामगाव", "Khamgaon"],
+      ["किन्होळा", "Kinhola"],
+      ["कुंभारी", "Kumbhari"],
+      ["कुसळी", "Kusali"],
+      ["लक्ष्मणनगर", "Laxman Nagar"],
+      ["मालेगाव", "Malegaon"],
+      ["मालेवाडी", "Malewadi"],
+      ["मानदेउळगांव", "Mandeulgaon"],
+      ["मांडवा", "Mandwa"],
+      ["मांजरगाव", "Manjargaon"],
+      ["मसला भातखेडा", "Masla Bhatkheda"],
+      ["मात्रेवाडी", "Matrewadi"],
+      ["मेव्हणा", "Mewhana"],
+      ["नजीकपांगरी", "Najikpangari"],
+      ["नंदखेडा", "Nandkheda"],
+      ["नानेगाव", "Nanegaon"],
+      ["निकळक", "Nikalak"],
+      ["पठारदेउळगांव", "Pathardeulgaon"],
+      ["पिरसावंगी", "Pirsawangi"],
+      ["राजेवाडी (खो.)", "Rajewadi [Khop.]"],
+      ["राजेवाडी (शे.)", "Rajewadi [She]"],
+      ["रामखेडा पाडळी", "Ramkheda Padali"],
+      ["रांजणगाव", "Ranjangaon"],
+      ["रोषणगाव", "Roshangaon"],
+      ["सागरवाडी", "Sagarwadi"],
+      ["सायगाव", "Saygaon"],
+      ["शेलगाव", "Shelgaon"],
+      ["सिंधी पिंपळगाव", "Sindhipimpalgaon"],
+      ["सिरसगाव घाटी", "Sirasgaonghati"],
+      ["सोमठाणा", "Somthana"],
+      ["तळणी लोधेवाडी", "Talani Lodhewadi"],
+      ["तुपेवाडी", "Tupewadi"],
+      ["उज्जैनपुरी", "Ujjainpuri"],
+      ["विल्हाडी", "Villhadi"],
+      ["वाघ्रुळ (दा.)", "Waghrul [Da]"],
+      ["वाकुळणी", "Wakulni"],
+      ["वाल्हा", "Walha"],
+      ["वंजारवाडी", "Wanjarwadi"],
+      ["वरुडी", "Warudi"],
+    ],
+    "भोकरदन": [], "जाफ्राबाद": [], "अंबड": [], "घनसावंगी": [], "परतूर": [], "मंठा": [],
+  },
+};
+
+</script>
+<script>
 /* खाजगी विहीर अधिग्रहण प्रस्ताव — page templates (25 pages).
  *
  * Shared by the browser app (Vihir_Adhigrahan_App.html) and generate.py
@@ -3467,13 +3569,38 @@ ${sigThree(d, 22)}`];
     return { version: 1, settings: { mrDigits: false }, masters: [district], proposals: [] };
   }
 
+  // Add the built-in lists (masters_data.js) once per data version: adds missing places by name,
+  // never removes or renames what the user already has.
+  function mergeMasterData() {
+    if (typeof MASTER_DATA === "undefined" || (db.settings.masterVersion || 0) >= MASTER_DATA_VERSION) return;
+    const child = (list, name, extra) => {
+      let n = list.find((x) => x.name === name);
+      if (!n) { n = node(name, extra); list.push(n); }
+      return n;
+    };
+    for (const [dname, talukas] of Object.entries(MASTER_DATA)) {
+      const d = child(db.masters, dname);
+      for (const [tname, gps] of Object.entries(talukas)) {
+        const t = child(d.children, tname);
+        for (const [gname, , villages] of gps) {
+          const g = child(t.children, gname);
+          for (const v of [gname].concat(villages || [])) child(g.children, v, { wadis: [] });
+        }
+      }
+    }
+    db.settings.masterVersion = MASTER_DATA_VERSION;
+    save();
+  }
+
   let db;
   function load() {
     try {
       const s = localStorage.getItem(STORE_KEY);
-      if (s) { db = JSON.parse(s); return; }
+      if (s) db = JSON.parse(s);
     } catch (e) { /* storage blocked or corrupt — start fresh */ }
-    db = seed();
+    if (!db) db = seed();
+    db.settings = db.settings || {};
+    mergeMasterData();
   }
   function save() {
     try { localStorage.setItem(STORE_KEY, JSON.stringify(db)); }
@@ -4008,6 +4135,7 @@ ${sigThree(d, 22)}`];
       if (!x || !Array.isArray(x.masters) || !Array.isArray(x.proposals)) return toast("ही विहीर अधिग्रहण बॅकअप फाईल नाही", true);
       if (!confirm(`बॅकअप मध्ये ${x.proposals.length} प्रस्ताव आहेत. सध्याची सर्व माहिती बदलून ही माहिती घ्यायची?`)) return;
       db = x; db.settings = db.settings || {};
+      mergeMasterData();
       save(); refreshAll(); toast("✔ बॅकअप परत आणला");
     };
     r.readAsText(file);

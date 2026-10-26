@@ -126,13 +126,38 @@
     return { version: 1, settings: { mrDigits: false }, masters: [district], proposals: [] };
   }
 
+  // Add the built-in lists (masters_data.js) once per data version: adds missing places by name,
+  // never removes or renames what the user already has.
+  function mergeMasterData() {
+    if (typeof MASTER_DATA === "undefined" || (db.settings.masterVersion || 0) >= MASTER_DATA_VERSION) return;
+    const child = (list, name, extra) => {
+      let n = list.find((x) => x.name === name);
+      if (!n) { n = node(name, extra); list.push(n); }
+      return n;
+    };
+    for (const [dname, talukas] of Object.entries(MASTER_DATA)) {
+      const d = child(db.masters, dname);
+      for (const [tname, gps] of Object.entries(talukas)) {
+        const t = child(d.children, tname);
+        for (const [gname, , villages] of gps) {
+          const g = child(t.children, gname);
+          for (const v of [gname].concat(villages || [])) child(g.children, v, { wadis: [] });
+        }
+      }
+    }
+    db.settings.masterVersion = MASTER_DATA_VERSION;
+    save();
+  }
+
   let db;
   function load() {
     try {
       const s = localStorage.getItem(STORE_KEY);
-      if (s) { db = JSON.parse(s); return; }
+      if (s) db = JSON.parse(s);
     } catch (e) { /* storage blocked or corrupt — start fresh */ }
-    db = seed();
+    if (!db) db = seed();
+    db.settings = db.settings || {};
+    mergeMasterData();
   }
   function save() {
     try { localStorage.setItem(STORE_KEY, JSON.stringify(db)); }
@@ -667,6 +692,7 @@
       if (!x || !Array.isArray(x.masters) || !Array.isArray(x.proposals)) return toast("ही विहीर अधिग्रहण बॅकअप फाईल नाही", true);
       if (!confirm(`बॅकअप मध्ये ${x.proposals.length} प्रस्ताव आहेत. सध्याची सर्व माहिती बदलून ही माहिती घ्यायची?`)) return;
       db = x; db.settings = db.settings || {};
+      mergeMasterData();
       save(); refreshAll(); toast("✔ बॅकअप परत आणला");
     };
     r.readAsText(file);

@@ -55,6 +55,7 @@ def main():
         '<link rel="stylesheet" href="app.css">': f"<style>\n{(WEB / 'app.css').read_text(encoding='utf-8')}</style>",
         '<script src="config.js"></script>': script(config + "\n" + consts, "config.js"),
         '<script src="vendor/qrcode.js"></script>': file_script("vendor/qrcode.js"),
+        '<script src="masters_data.js"></script>': file_script("masters_data.js"),
         '<script src="form.js"></script>': file_script("form.js"),
         '<script src="pay.js"></script>': file_script("pay.js"),
         '<script src="app.js"></script>': file_script("app.js"),
